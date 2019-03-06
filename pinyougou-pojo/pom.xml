@@ -12,5 +12,12 @@
 
     <artifactId>pinyougou-pojo</artifactId>
 
+    <dependencies>
+        <!-- 通用Mapper简化单表CRUD功能 -->
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
