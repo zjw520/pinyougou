@@ -60,4 +60,16 @@ public class GoodsController {
 
         return goodsService.findByPage(goods, page, rows);
     }
+
+    /** 商品上下架(修改上下架状态) */
+    @GetMapping("/updateMarketable")
+    public boolean updateMarketable(Long[] ids, String status){
+        try{
+            goodsService.updateStatus("is_marketable", ids, status);
+            return true;
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return false;
+    }
 }
