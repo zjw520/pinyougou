@@ -48,7 +48,6 @@ app.controller('brandController', function ($scope, $controller, baseService) {
         // 把json字符串解析成新的json对象
         $scope.entity = JSON.parse(jsonStr);
     };
-
     // 删除品牌
     $scope.delete = function(){
         // 判断用户是否选中了行
