@@ -5,8 +5,16 @@ import com.pinyougou.common.pojo.PageResult;
 import com.pinyougou.pojo.Goods;
 import com.pinyougou.service.GoodsService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
 
 /**
  * 商品控制器
@@ -21,6 +29,17 @@ public class GoodsController {
 
     @Reference(timeout = 10000)
     private GoodsService goodsService;
+
+    @Autowired
+    private JmsTemplate jmsTemplate;
+    @Autowired
+    private Destination solrQueue;
+    @Autowired
+    private Destination solrDeleteQueue;
+    @Autowired
+    private Destination pageTopic;
+    @Autowired
+    private Destination pageDeleteTopic;
 
     /** 添加商品 */
     @PostMapping("/save")
@@ -66,6 +85,48 @@ public class GoodsController {
     public boolean updateMarketable(Long[] ids, String status){
         try{
             goodsService.updateStatus("is_marketable", ids, status);
+
+            // 判断上下架
+            if ("1".equals(status)){ // 上架
+
+                // 发送消息到消息中间件(创建SKU商品的索引)
+                jmsTemplate.send(solrQueue, new MessageCreator() {
+                    @Override
+                    public Message createMessage(Session session) throws JMSException {
+                        return session.createObjectMessage(ids);
+                    }
+                });
+
+
+                // 发送消息到消息中间件(生成SPU商品的静态页面)
+                for (Long id : ids) {
+                    jmsTemplate.send(pageTopic, new MessageCreator() {
+                        @Override
+                        public Message createMessage(Session session) throws JMSException {
+                            return session.createTextMessage(id.toString());
+                        }
+                    });
+                }
+
+
+            }else{ // 下架
+
+                // 发送消息到消息中间件(删除SKU商品的索引)
+                jmsTemplate.send(solrDeleteQueue, new MessageCreator() {
+                    @Override
+                    public Message createMessage(Session session) throws JMSException {
+                        return session.createObjectMessage(ids);
+                    }
+                });
+
+                // 发送消息到消息中间件(删除SPU商品的静态页面)
+                jmsTemplate.send(pageDeleteTopic, new MessageCreator() {
+                    @Override
+                    public Message createMessage(Session session) throws JMSException {
+                        return session.createObjectMessage(ids);
+                    }
+                });
+            }
             return true;
         }catch (Exception ex){
             ex.printStackTrace();

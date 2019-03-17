@@ -215,7 +215,7 @@
 								</div>
 							</div>
 
-
+							{{entity.items}}
 							<div ng-if="entity.isEnableSpec == 1">
 								<div class="row data-type">
 									<!--
@@ -228,7 +228,7 @@
 	
 											<span ng-repeat="o in spec.options">
 												<input type="checkbox"
-													   ng-click="updateSpecAttr($event,spec.text,o.optionName);createItems()"/>
+													   ng-click="updateSpecAttr($event,spec.text,o.optionName);createItems($event,spec.text,o.optionName)"/>
 												{{o.optionName}}
 											</span>
 	

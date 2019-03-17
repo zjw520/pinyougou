@@ -197,32 +197,42 @@ app.controller('goodsController', function($scope, $controller, baseService){
 
 
     // 生成SKU数组
-    $scope.createItems = function () {
-        // 定义SKU数组，并且初始化
-        // spec: {"网络":"联通4G","机身内存":"32G"}
-        $scope.entity.items = [{spec : {}, price : 0, num : 9999, status : '0', isDefault : '0'}];
+    $scope.createItems = function ($event, specName, optionName) {
+
         // 用户选中的规格选项
         // $scope.entity.goodsDesc.specificationItems
         // [{"attributeValue":["移动4G","联通3G","联通4G"],"attributeName":"网络"},
         // {"attributeValue":["64G"],"attributeName":"机身内存"}]
         var specItems = $scope.entity.goodsDesc.specificationItems;
 
-        // 迭代用户选中的规格选项数组
-        for (var i = 0; i < specItems.length; i++){ // 1
-            // 获取一个数组元素
-            // {"attributeValue":["移动4G","联通3G","联通4G"],"attributeName":"网络"}
-            var obj = specItems[i];
+        if ($event.target.checked || specItems.length == 1) {
+            // 定义SKU数组，并且初始化
+            // spec: {"网络":"联通4G","机身内存":"32G"}
+            $scope.entity.items = [{spec : {}, price : 0, num : 9999, status : '0', isDefault : '0'}];
 
-            // 调用生成新的SKU数组的方法(对 $scope.entity.items数组扩充的方法)
-            /**
-             * 循环第一次
-             * [{"spec":{"网络":"移动3G"},"price":0,"num":9999,"status":"0","isDefault":"0"},
-             * {"spec":{"网络":"移动4G"},"price":0,"num":9999,"status":"0","isDefault":"0"},
-             * {"spec":{"网络":"联通3G"},"price":0,"num":9999,"status":"0","isDefault":"0"}]
-             */
-            $scope.entity.items = $scope.swapItems($scope.entity.items,
-                        obj.attributeValue, obj.attributeName);
+            // 迭代用户选中的规格选项数组
+            for (var i = 0; i < specItems.length; i++){ // 1
+                // 获取一个数组元素
+                // {"attributeValue":["移动4G","联通3G","联通4G"],"attributeName":"网络"}
+                var obj = specItems[i];
 
+                // 调用生成新的SKU数组的方法(对 $scope.entity.items数组扩充的方法)
+                /**
+                 * 循环第一次
+                 * [{"spec":{"网络":"移动3G"},"price":0,"num":9999,"status":"0","isDefault":"0"},
+                 * {"spec":{"网络":"移动4G"},"price":0,"num":9999,"status":"0","isDefault":"0"},
+                 * {"spec":{"网络":"联通3G"},"price":0,"num":9999,"status":"0","isDefault":"0"}]
+                 */
+                $scope.entity.items = $scope.swapItems($scope.entity.items,
+                    obj.attributeValue, obj.attributeName);
+            }
+        }else{
+            for (var i = 0; i <  $scope.entity.items.length; i++){
+                if ($scope.entity.items[i].spec[specName] == optionName){
+                    var idx = $scope.entity.items.indexOf( $scope.entity.items[i]);
+                    $scope.entity.items.splice(idx, 1);
+                }
+            }
         }
     };
 
